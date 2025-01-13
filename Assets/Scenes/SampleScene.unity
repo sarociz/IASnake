@@ -1015,7 +1015,6 @@ MonoBehaviour:
   rightWall: {fileID: 412305048}
   topWall: {fileID: 567262235}
   bottomWall: {fileID: 1032650506}
-  tailPrefab: {fileID: 0}
 --- !u!4 &1146158212
 Transform:
   m_ObjectHideFlags: 0
