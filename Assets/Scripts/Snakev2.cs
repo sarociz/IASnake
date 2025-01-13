@@ -1,44 +1,104 @@
+using System.Collections.Generic; // Necesario para usar List
 using TMPro;
 using UnityEngine;
 
 public class Snakev2 : MonoBehaviour
 {
-    [SerializeField] float speed;
+    [SerializeField] float speed = 5f;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private Food food;
+    [SerializeField] private GameObject tailPrefab; // Prefab para los segmentos de la cola
 
     private int points = 0;
+    private Vector2 direction = Vector2.right; // Dirección inicial
+    private List<Transform> tail = new List<Transform>(); // Lista para los segmentos de la cola
+    private float moveCooldown = 0.1f; // Tiempo entre movimientos
+    private float moveTimer = 0f;
 
-    // Start is called before the first frame update
     void Start()
     {
-
+        ResetSnake();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        ChangeDirection();
+        HandleInput();
+
+        // Controla el tiempo entre movimientos
+        moveTimer += Time.deltaTime;
+        if (moveTimer >= moveCooldown)
+        {
+            MoveTail();
+            Move();
+            moveTimer = 0f;
+        }
     }
 
-    void ChangeDirection()
+    public void ResetSnake()
     {
-        if (Input.GetKey(KeyCode.W))
+        // Elimina segmentos antiguos
+        foreach (Transform segment in tail)
         {
-            transform.Translate(Vector2.up * speed * Time.deltaTime);
+            Destroy(segment.gameObject);
         }
-        else if (Input.GetKey(KeyCode.A))
+        tail.Clear();
+
+        // Reinicia la dirección y posición de la cabeza
+        direction = Vector2.right;
+        transform.position = Vector3.zero;
+    }
+
+    void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.W) && direction != Vector2.down)
         {
-            transform.Translate(Vector2.left * speed * Time.deltaTime);
+            direction = Vector2.up;
         }
-        else if (Input.GetKey(KeyCode.S))
+        else if (Input.GetKeyDown(KeyCode.A) && direction != Vector2.right)
         {
-            transform.Translate(Vector2.down * speed * Time.deltaTime);
+            direction = Vector2.left;
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKeyDown(KeyCode.S) && direction != Vector2.up)
         {
-            transform.Translate(Vector2.right * speed * Time.deltaTime);
+            direction = Vector2.down;
         }
+        else if (Input.GetKeyDown(KeyCode.D) && direction != Vector2.left)
+        {
+            direction = Vector2.right;
+        }
+    }
+
+    void Move()
+    {
+        Vector3 newPosition = transform.position + (Vector3)direction;
+        transform.position = newPosition;
+    }
+
+    void MoveTail()
+    {
+        // Mueve cada segmento al lugar del segmento anterior
+        for (int i = tail.Count - 1; i > 0; i--)
+        {
+            tail[i].position = tail[i - 1].position;
+        }
+
+        // El primer segmento sigue a la cabeza
+        if (tail.Count > 0)
+        {
+            tail[0].position = transform.position;
+        }
+    }
+
+    void Grow()
+    {
+        // Instancia un nuevo segmento y posiciónalo en el lugar adecuado
+        GameObject newSegment = Instantiate(tailPrefab);
+        Vector3 newSegmentPosition = tail.Count > 0
+            ? tail[tail.Count - 1].position
+            : transform.position - (Vector3)direction;
+
+        newSegment.transform.position = newSegmentPosition;
+        tail.Add(newSegment.transform);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -47,16 +107,17 @@ public class Snakev2 : MonoBehaviour
         {
             AddPoint();
             food.Eaten();
+            Grow(); // Incrementa el tamaño de la serpiente
             Destroy(collision.gameObject);
         }
-
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Wall"))
+        if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("SnakeBody"))
         {
-            Debug.Log("Piupiupiu");
+            Debug.Log("Game Over");
+            Time.timeScale = 0; // Detén el juego
         }
     }
 

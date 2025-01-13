@@ -33,10 +33,21 @@ public class Food : MonoBehaviour
         Vector2 pos = new Vector2(x, y);
         Instantiate(food, pos, Quaternion.identity, transform);
     }
+    //void Spawn()
+    //{
+    //    float x = Random.Range(minposx, maxposx);
+    //    float y = Random.Range(minposy, maxposy);
+    //    Vector2 pos = new Vector2(x, y);
+    //    food.transform.position = pos;
+    //    food.SetActive(true);
+    //}
+
     public void Eaten()
     {
         Invoke(nameof(Spawn), 1f);
     }
+
+
     // Update is called once per frame
     void Update()
     {
