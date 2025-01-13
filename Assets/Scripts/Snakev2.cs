@@ -1,19 +1,25 @@
-using System.Collections.Generic; // Necesario para usar List
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Snakev2 : MonoBehaviour
 {
-    [SerializeField] float speed = 5f;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private Food food;
-    [SerializeField] private GameObject tailPrefab; // Prefab para los segmentos de la cola
+    [SerializeField] private GameObject tailPrefab;
 
     private int points = 0;
     private Vector2 direction = Vector2.right; // Dirección inicial
-    private List<Transform> tail = new List<Transform>(); // Lista para los segmentos de la cola
-    private float moveCooldown = 0.1f; // Tiempo entre movimientos
+    private List<Transform> tail = new List<Transform>();
+    private List<Vector3> positions = new List<Vector3>(); // Historial de posiciones
+    private float moveCooldown = 0.1f;
     private float moveTimer = 0f;
+    private float distance = 0.5f;
+
+    private bool immuneToBodyCollision = false; // Bandera de inmunidad
+    private float immunityTimer = 0f;          // Temporizador de inmunidad
+    private float immunityDuration = 0.2f;    // Duración de la inmunidad tras crecer
 
     void Start()
     {
@@ -28,9 +34,19 @@ public class Snakev2 : MonoBehaviour
         moveTimer += Time.deltaTime;
         if (moveTimer >= moveCooldown)
         {
-            MoveTail();
             Move();
             moveTimer = 0f;
+        }
+
+        // Controla el temporizador de inmunidad
+        if (immuneToBodyCollision)
+        {
+            immunityTimer += Time.deltaTime;
+            if (immunityTimer >= immunityDuration)
+            {
+                immuneToBodyCollision = false;
+                immunityTimer = 0f;
+            }
         }
     }
 
@@ -43,55 +59,64 @@ public class Snakev2 : MonoBehaviour
         }
         tail.Clear();
 
-        // Reinicia la dirección y posición de la cabeza
-        direction = Vector2.right;
+        // Reinicia dirección y posición
+        direction = Vector2.right * distance;
         transform.position = Vector3.zero;
+
+        // Limpia el historial de posiciones
+        positions.Clear();
+        positions.Add(transform.position);
+
+        // Reinicia puntajes y texto
+        points = 0;
+        scoreText.text = "Score: " + points.ToString();
     }
 
     void HandleInput()
     {
         if (Input.GetKeyDown(KeyCode.W) && direction != Vector2.down)
         {
-            direction = Vector2.up;
+            direction = Vector2.up * distance;
         }
         else if (Input.GetKeyDown(KeyCode.A) && direction != Vector2.right)
         {
-            direction = Vector2.left;
+            direction = Vector2.left * distance;
         }
         else if (Input.GetKeyDown(KeyCode.S) && direction != Vector2.up)
         {
-            direction = Vector2.down;
+            direction = Vector2.down * distance;
         }
         else if (Input.GetKeyDown(KeyCode.D) && direction != Vector2.left)
         {
-            direction = Vector2.right;
+            direction = Vector2.right * distance;
         }
     }
 
     void Move()
     {
-        Vector3 newPosition = transform.position + (Vector3)direction;
+        // Calcula la nueva posición de la cabeza
+        Vector3 newPosition = transform.position + ((Vector3)direction);
         transform.position = newPosition;
-    }
 
-    void MoveTail()
-    {
-        // Mueve cada segmento al lugar del segmento anterior
-        for (int i = tail.Count - 1; i > 0; i--)
+        // Almacena la posición actual de la cabeza
+        positions.Insert(0, transform.position);
+
+        // Ajusta la posición de cada segmento de la cola
+        for (int i = 0; i < tail.Count; i++)
         {
-            tail[i].position = tail[i - 1].position;
+            tail[i].position = positions[i + 1];
         }
 
-        // El primer segmento sigue a la cabeza
-        if (tail.Count > 0)
+        // Limpia posiciones antiguas que ya no se necesitan
+        if (positions.Count > tail.Count + 1)
         {
-            tail[0].position = transform.position;
+            positions.RemoveAt(positions.Count - 1);
         }
     }
 
     void Grow()
     {
-        // Instancia un nuevo segmento y posiciónalo en el lugar adecuado
+        // Instancia un nuevo segmento y posiciónalo
         GameObject newSegment = Instantiate(tailPrefab);
         Vector3 newSegmentPosition = tail.Count > 0
             ? tail[tail.Count - 1].position
@@ -99,6 +124,9 @@ public class Snakev2 : MonoBehaviour
 
         newSegment.transform.position = newSegmentPosition;
         tail.Add(newSegment.transform);
+
+        // Activa la inmunidad al cuerpo
+        immuneToBodyCollision = true;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -107,17 +135,18 @@ public class Snakev2 : MonoBehaviour
         {
             AddPoint();
             food.Eaten();
-            Grow(); // Incrementa el tamaño de la serpiente
+            Grow();
             Destroy(collision.gameObject);
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("SnakeBody"))
+        if (!immuneToBodyCollision &&
+            (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("SnakeBody")))
         {
             Debug.Log("Game Over");
-            Time.timeScale = 0; // Detén el juego
+            SceneManager.LoadScene("GameOver");
         }
     }
 

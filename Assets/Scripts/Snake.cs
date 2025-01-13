@@ -9,7 +9,7 @@ public class Snake : MonoBehaviour
 
     private List<Transform> bodySegments = new List<Transform>();
     private Vector2Int direction = Vector2Int.right; // Dirección inicial
-    private bool isAlive = true;
+
     public int gridWidth = 15; // Ancho del grid
     public int gridHeight = 15; // Altura del grid
     public float cellSize = 0.5f; // Tamaño de cada celda
