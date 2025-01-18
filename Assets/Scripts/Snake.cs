@@ -1,110 +1,139 @@
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Snake : MonoBehaviour
 {
-    public GameObject snakeHead; // Cambiado a GameObject
-    public GameObject bodySegmentPrefab; // Prefab del cuerpo
-    public float moveSpeed = 0.5f; // Velocidad de movimiento
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private Food food;
+    [SerializeField] private GameObject tailPrefab;
 
-    private List<Transform> bodySegments = new List<Transform>();
-    private Vector2Int direction = Vector2Int.right; // Dirección inicial
+    private int points = 0;
+    private Vector2 direction = Vector2.right; // Dirección inicial
+    private List<Transform> tail = new List<Transform>();
+    private List<Vector3> positions = new List<Vector3>(); // Historial de posiciones
+    public float moveCooldown = 0.05f; // Reduce la velocidad al aumentar este valor
+    private bool ate = false;
+    private bool immuneToBodyCollision = false;
+    public float segmentDistance = 0.7f; // Distancia entre segmentos
 
-    public int gridWidth = 15; // Ancho del grid
-    public int gridHeight = 15; // Altura del grid
-    public float cellSize = 0.5f; // Tamaño de cada celda
+    void Start()
+    {
+        ResetSnake();
+        InvokeRepeating(nameof(Move), moveCooldown, moveCooldown);
+    }
+    void Update()
+    {
+        HandleInput();
+    }
 
-    //void Start()
-    //{
-    //    ResetSnake();
-    //}
+    public void ResetSnake()
+    {
+        // Elimina segmentos antiguos
+        foreach (Transform segment in tail)
+        {
+            Destroy(segment.gameObject);
+        }
+        tail.Clear();
+
+        // Reinicia dirección y posición
+        direction = Vector2.right;
+        transform.position = Vector3.zero;
+
+        // Limpia el historial de posiciones
+        positions.Clear();
+        positions.Add(transform.position);
+
+        // Reinicia puntajes y texto
+        points = 0;
+        scoreText.text = "Score: " + points.ToString();
+
+        // Reinicia la inmunidad
+        immuneToBodyCollision = false;
+    }
+
+    void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.W) && direction != Vector2.down)
+        {
+            direction = Vector2.up;
+        }
+        else if (Input.GetKeyDown(KeyCode.A) && direction != Vector2.right)
+        {
+            direction = Vector2.left;
+        }
+        else if (Input.GetKeyDown(KeyCode.S) && direction != Vector2.up)
+        {
+            direction = Vector2.down;
+        }
+        else if (Input.GetKeyDown(KeyCode.D) && direction != Vector2.left)
+        {
+            direction = Vector2.right;
+        }
+    }
+
+    void Move()
+    {
 
 
+        Vector2 currentPosition = transform.position;
 
-    //public void ResetSnake()
-    //{
-    //    // Elimina segmentos antiguos
-    //    foreach (Transform segment in bodySegments)
-    //    {
-    //        Destroy(segment.gameObject);
-    //    }
-    //    bodySegments.Clear();
+        // Mueve la cabeza
+        transform.Translate(direction * segmentDistance); // Usa `segmentDistance` para mover más suavemente
 
-    //    direction = Vector2Int.right;
 
-    //    // Coloca la serpiente en una posición aleatoria dentro del grid
-    //    Vector2Int randomPosition = GetRandomGridPosition();
-    //    Vector3 newHeadPosition = GridToWorldPosition(randomPosition);
-    //    snakeHead.transform.position = newHeadPosition;
+        // Si comió, añade un nuevo segmento
+        if (ate)
+        {
+            GameObject newSegment = Instantiate(tailPrefab, currentPosition, Quaternion.identity);
+            tail.Insert(0, newSegment.transform);
+            ate = false;
 
-    //    // Añade la cabeza a la lista de segmentos
-    //    bodySegments.Add(snakeHead.transform);
-    //}
+            // Activa inmunidad temporal para evitar colisiones
+            immuneToBodyCollision = true;
+            Invoke(nameof(DisableImmunity), moveCooldown);
+        }
+        else if (tail.Count > 0)
+        {
+            // Actualiza las posiciones del cuerpo
+            tail.Last().position = currentPosition;
 
-    //public void Move()
-    //{
-    //    if (!isAlive) return; // Si no está vivo, no se mueve
+            tail.Insert(0, tail.Last());
+            tail.RemoveAt(tail.Count - 1);
+        }
+    }
 
-    //    // Mover el cuerpo
-    //    for (int i = bodySegments.Count - 1; i > 0; i--)
-    //    {
-    //        bodySegments[i].position = bodySegments[i - 1].position;
-    //    }
+    void DisableImmunity()
+    {
+        immuneToBodyCollision = false;
+    }
 
-    //    // Mover la cabeza con velocidad (multiplicado por Time.deltaTime)
-    //    Vector3 headPosition = snakeHead.transform.position + new Vector3(direction.x * cellSize, direction.y * cellSize, 0);
-    //    snakeHead.transform.position = Vector3.MoveTowards(snakeHead.transform.position, headPosition, moveSpeed * Time.deltaTime);
-    //}
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Food"))
+        {
+            AddPoint();
+            food.Eaten();
+            ate = true;
+            Destroy(collision.gameObject);
+        }
+        else if (!immuneToBodyCollision && collision.CompareTag("SnakeBody"))
+        {
+            GameOver();
+        }
+    }
 
-    //private Vector2Int GetRandomGridPosition()
-    //{
-    //    int x = Random.Range(0, gridWidth);
-    //    int y = Random.Range(0, gridHeight);
-    //    return new Vector2Int(x, y);
-    //}
+    void GameOver()
+    {
+        Debug.Log("Game Over");
+        SceneManager.LoadScene("GameOver");
+    }
 
-    //private Vector3 GridToWorldPosition(Vector2Int gridPosition)
-    //{
-    //    // Convertir la posición del grid (en términos de celdas) a coordenadas del mundo
-    //    //float xPos = (gridPosition.x - gridWidth / 2) * cellSize;
-    //    //float yPos = (gridPosition.y - gridHeight / 2) * cellSize;
-
-    //    float xPos = (gridPosition.x - gridWidth / 2f) * cellSize + cellSize / 2f;
-    //    float yPos = (gridPosition.y - gridHeight / 2f) * cellSize + cellSize / 2f;
-    //    return new Vector3(xPos, yPos, 0);
-    //}
-
-    //public void ChangeDirection(Vector2Int newDirection)
-    //{
-    //    // Asegúrate de que la dirección no sea opuesta a la actual
-    //    if (newDirection + direction != Vector2Int.zero)
-    //    {
-    //        direction = newDirection;
-    //    }
-    //}
-
-    //public void Grow()
-    //{
-    //    // Crear un nuevo segmento del cuerpo
-    //    Transform newSegment = Instantiate(bodySegmentPrefab, bodySegments[bodySegments.Count - 1].position, Quaternion.identity).transform;
-    //    bodySegments.Add(newSegment);
-    //}
-
-    //private void OnTriggerEnter(Collider other)
-    //{
-    //    if (other.CompareTag("Food"))
-    //    {
-    //        Grow();
-    //    }
-    //    else if (other.CompareTag("Wall") || other.CompareTag("Body"))
-    //    {
-    //        Die();
-    //    }
-    //}
-
-    //public void Die()
-    //{
-    //    isAlive = false;
-    //    Debug.Log("Game Over");
-    //}
+    public void AddPoint()
+    {
+        points++;
+        scoreText.text = "Score: " + points.ToString();
+    }
 }

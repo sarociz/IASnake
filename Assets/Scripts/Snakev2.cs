@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,11 +17,9 @@ public class Snakev2 : MonoBehaviour
     private float moveCooldown = 0.1f;
     private float moveTimer = 0f;
     private float distance = 0.5f;
+    private bool ate = false;
 
-    private bool immuneToBodyCollision = false; // Bandera de inmunidad
-    private float immunityTimer = 0f;          // Temporizador de inmunidad
-    private float immunityDuration = 0.2f;    // Duración de la inmunidad tras crecer
-
+ 
     void Start()
     {
         ResetSnake();
@@ -38,16 +37,7 @@ public class Snakev2 : MonoBehaviour
             moveTimer = 0f;
         }
 
-        // Controla el temporizador de inmunidad
-        if (immuneToBodyCollision)
-        {
-            immunityTimer += Time.deltaTime;
-            if (immunityTimer >= immunityDuration)
-            {
-                immuneToBodyCollision = false;
-                immunityTimer = 0f;
-            }
-        }
+       
     }
 
     public void ResetSnake()
@@ -94,25 +84,33 @@ public class Snakev2 : MonoBehaviour
 
     void Move()
     {
-        // Calcula la nueva posición de la cabeza
-        Vector3 newPosition = transform.position + ((Vector3)direction);
-        transform.position = newPosition;
+        Vector2 v = transform.position;
 
-        // Almacena la posición actual de la cabeza
-        positions.Insert(0, transform.position);
+        transform.Translate(direction);
 
-        // Ajusta la posición de cada segmento de la cola
-        for (int i = 0; i < tail.Count; i++)
+        if (ate)
         {
-            tail[i].position = positions[i + 1];
+            GameObject g = Instantiate(tailPrefab, v, Quaternion.identity);
+            tail.Insert(0, g.transform);
+            ate = false;
+        }
+        else if (tail.Count > 0)
+        {
+            Vector3 previousPosition = tail[0].position;
+            tail[0].position = v;
+
+            for (int i = 1; i < tail.Count; i++)
+            {
+                Vector3 tempPosition = tail[i].position;
+                tail[i].position = previousPosition;
+                previousPosition = tempPosition;
+            }
         }
 
-        // Limpia posiciones antiguas que ya no se necesitan
-        if (positions.Count > tail.Count + 1)
-        {
-            positions.RemoveAt(positions.Count - 1);
-        }
+        // Actualiza historial de posiciones
+        positions.Add(transform.position);
     }
+
 
     void Grow()
     {
@@ -126,7 +124,7 @@ public class Snakev2 : MonoBehaviour
         tail.Add(newSegment.transform);
 
         // Activa la inmunidad al cuerpo
-        immuneToBodyCollision = true;
+       // immuneToBodyCollision = true;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -135,20 +133,17 @@ public class Snakev2 : MonoBehaviour
         {
             AddPoint();
             food.Eaten();
-            Grow();
+            //Grow();
+            ate = true;
             Destroy(collision.gameObject);
+        }
+        else {
+            Debug.Log("Game Over");
+            SceneManager.LoadScene("GameOver");
+
         }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (!immuneToBodyCollision &&
-            (collision.gameObject.CompareTag("Wall") || collision.gameObject.CompareTag("SnakeBody")))
-        {
-            Debug.Log("Game Over");
-            SceneManager.LoadScene("GameOver");
-        }
-    }
 
     public void AddPoint()
     {
