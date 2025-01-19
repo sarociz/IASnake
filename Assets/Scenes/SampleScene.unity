@@ -249,15 +249,15 @@ MonoBehaviour:
       m_Calls: []
   m_text: New Text
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  m_sharedMaterial: {fileID: 2140032, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4278190080
+  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -274,13 +274,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 37.1
+  m_fontSizeBase: 40
   m_fontWeight: 400
-  m_enableAutoSizing: 0
+  m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -429,7 +429,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -490,7 +490,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.4431373, g: 0.67058825, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -561,12 +561,12 @@ GameObject:
   - component: {fileID: 524512370}
   - component: {fileID: 524512372}
   m_Layer: 0
-  m_Name: Snake
+  m_Name: 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &524512367
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -736,7 +736,9 @@ MonoBehaviour:
   scoreText: {fileID: 240761975}
   food: {fileID: 1146158211}
   tailPrefab: {fileID: 421085729055923589, guid: 419a2b0633f0d78479f8f589bf1cefdd, type: 3}
-  moveCooldown: 0.15
+  spriteTransform: {fileID: 0}
+  bodySprites: []
+  moveCooldown: 0.25
   segmentDistance: 0.55
 --- !u!1 &567262235
 GameObject:
@@ -843,7 +845,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -973,7 +975,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -998,6 +1000,101 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1134530752
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: food
+      value: 
+      objectReference: {fileID: 1146158211}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: scoreText
+      value: 
+      objectReference: {fileID: 240761975}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: tailPrefab
+      value: 
+      objectReference: {fileID: 421085729055923589, guid: 419a2b0633f0d78479f8f589bf1cefdd, type: 3}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: moveCooldown
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: segmentDistance
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: spriteTransform
+      value: 
+      objectReference: {fileID: 1134530753}
+    - target: {fileID: 1041044818445465304, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: initialTailLength
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1477534785184969085, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3473449592987817733, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_Name
+      value: Snake
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5448692718338455343, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4546202238193703297, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+--- !u!4 &1134530753 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8007178658101902363, guid: 99bc0cbb20f74594fa4eea11e9e1f564, type: 3}
+  m_PrefabInstance: {fileID: 1134530752}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1146158210
 GameObject:
   m_ObjectHideFlags: 0
@@ -1158,7 +1255,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 2.04, y: 1.12}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -1464,7 +1561,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1504,3 +1601,4 @@ SceneRoots:
   - {fileID: 1470654058}
   - {fileID: 209145696}
   - {fileID: 1251947135}
+  - {fileID: 1134530752}
