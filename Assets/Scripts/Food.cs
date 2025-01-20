@@ -23,7 +23,7 @@ public class Food : MonoBehaviour
 
         //InvokeRepeating("Spawn", 2f, 1f);
         food.SetActive(true);
-        Invoke(nameof(Spawn), 1f);
+        Invoke(nameof(Spawn), 0f);
     }
 
     void Spawn()
@@ -37,7 +37,7 @@ public class Food : MonoBehaviour
 
     public void Eaten()
     {
-        Invoke(nameof(Spawn), 1f);
+        Invoke(nameof(Spawn), 0f);
     }
 
 
