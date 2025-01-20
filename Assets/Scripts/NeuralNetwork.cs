@@ -16,22 +16,31 @@ public class NeuralNetwork : MonoBehaviour
         this.hiddenSize = hiddenSize;
         this.outputSize = outputSize;
         memory = new List<Experience>();
+
+        // Inicializar pesos aleatorios
+        weightsInputHidden = new float[inputSize, hiddenSize];
+        weightsHiddenOutput = new float[hiddenSize, outputSize];
         InitializeWeights();
     }
 
     private void InitializeWeights()
     {
         System.Random random = new System.Random();
-        weightsInputHidden = new float[inputSize, hiddenSize];
-        weightsHiddenOutput = new float[hiddenSize, outputSize];
-
         for (int i = 0; i < inputSize; i++)
+        {
             for (int j = 0; j < hiddenSize; j++)
+            {
                 weightsInputHidden[i, j] = (float)random.NextDouble() * 2 - 1;
+            }
+        }
 
         for (int i = 0; i < hiddenSize; i++)
+        {
             for (int j = 0; j < outputSize; j++)
+            {
                 weightsHiddenOutput[i, j] = (float)random.NextDouble() * 2 - 1;
+            }
+        }
     }
 
     public int Predict(float[] inputs)
@@ -68,67 +77,67 @@ public class NeuralNetwork : MonoBehaviour
         return bestAction;
     }
 
-    public void ApplyReward(float reward, float[] state, int action, float[] nextState)
-    {
-        // Agrega la experiencia al historial
-        memory.Add(new Experience(state, action, reward, nextState));
+    //public void ApplyReward(float reward, float[] state, int action, float[] nextState)
+    //{
+    //    // Agrega la experiencia al historial
+    //    memory.Add(new Experience(state, action, reward, nextState));
 
-        // Entrena usando las experiencias almacenadas
-        Train();
-    }
+    //    // Entrena usando las experiencias almacenadas
+    //    Train();
+    //}
 
-    private void Train()
-    {
-        foreach (var experience in memory)
-        {
-            // Predicción actual (Q(s, a))
-            float[] hidden = ForwardPass(experience.State, weightsInputHidden);
-            float[] outputs = ForwardPass(hidden, weightsHiddenOutput);
+    //private void Train()
+    //{
+    //    foreach (var experience in memory)
+    //    {
+    //        // Predicción actual (Q(s, a))
+    //        float[] hidden = ForwardPass(experience.State, weightsInputHidden);
+    //        float[] outputs = ForwardPass(hidden, weightsHiddenOutput);
 
-            // Calcula el valor objetivo (Q-target)
-            float qTarget = experience.Reward;
-            if (experience.NextState != null)
-            {
-                // Busca el mejor Q(s', a') futuro si no es un estado terminal
-                float[] nextHidden = ForwardPass(experience.NextState, weightsInputHidden);
-                float[] nextOutputs = ForwardPass(nextHidden, weightsHiddenOutput);
-                qTarget += discountFactor * Mathf.Max(nextOutputs);
-            }
+    //        // Calcula el valor objetivo (Q-target)
+    //        float qTarget = experience.Reward;
+    //        if (experience.NextState != null)
+    //        {
+    //            // Busca el mejor Q(s', a') futuro si no es un estado terminal
+    //            float[] nextHidden = ForwardPass(experience.NextState, weightsInputHidden);
+    //            float[] nextOutputs = ForwardPass(nextHidden, weightsHiddenOutput);
+    //            qTarget += discountFactor * Mathf.Max(nextOutputs);
+    //        }
 
-            // Calcula el error y ajusta los pesos
-            float error = qTarget - outputs[experience.Action];
-            Backpropagate(error, hidden, experience.Action);
-        }
+    //        // Calcula el error y ajusta los pesos
+    //        float error = qTarget - outputs[experience.Action];
+    //        Backpropagate(error, hidden, experience.Action);
+    //    }
 
-        // Limpia la memoria si es necesario (opcional, para evitar consumo de memoria)
-        memory.Clear();
-    }
+    //    // Limpia la memoria si es necesario (opcional, para evitar consumo de memoria)
+    //    memory.Clear();
+    //}
 
-    private float[] ForwardPass(float[] inputs, float[,] weights)
-    {
-        int outputSize = weights.GetLength(1);
-        float[] outputs = new float[outputSize];
-        for (int i = 0; i < outputSize; i++)
-        {
-            outputs[i] = 0;
-            for (int j = 0; j < inputs.Length; j++)
-                outputs[i] += inputs[j] * weights[j, i];
-            outputs[i] = Mathf.Tan(outputs[i]); // Activación
-        }
-        return outputs;
-    }
+    //private float[] ForwardPass(float[] inputs, float[,] weights)
+    //{
+    //    int outputSize = weights.GetLength(1);
+    //    float[] outputs = new float[outputSize];
+    //    for (int i = 0; i < outputSize; i++)
+    //    {
+    //        outputs[i] = 0;
+    //        for (int j = 0; j < inputs.Length; j++)
+    //            outputs[i] += inputs[j] * weights[j, i];
+    //        outputs[i] = Mathf.Tan(outputs[i]); // Activación
+    //    }
+    //    return outputs;
+    //}
 
-    private void Backpropagate(float error, float[] hidden, int action)
-    {
-        // Ajusta los pesos de salida (hidden -> output)
-        for (int i = 0; i < hiddenSize; i++)
-        {
-            float gradient = error * hidden[i];
-            weightsHiddenOutput[i, action] += learningRate * gradient;
-        }
+    //private void Backpropagate(float error, float[] hidden, int action)
+    //{
+    //    // Ajusta los pesos de salida (hidden -> output)
+    //    for (int i = 0; i < hiddenSize; i++)
+    //    {
+    //        float gradient = error * hidden[i];
+    //        weightsHiddenOutput[i, action] += learningRate * gradient;
+    //    }
 
-        // (Opcional) Ajusta los pesos de entrada (input -> hidden) si lo necesitas
-    }
+    //    // (Opcional) Ajusta los pesos de entrada (input -> hidden) si lo necesitas
+    //}
 }
 
 // Clase para almacenar experiencias (estado, acción, recompensa, siguiente estado)

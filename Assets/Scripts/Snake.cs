@@ -105,7 +105,7 @@ public class Snake : MonoBehaviour
             bodySprites.Insert(0, bodySprite);
 
             ate = false;
-            NeuralNetwork.ApplyReward(10f, currentState, -1, GetState());
+            //NeuralNetwork.ApplyReward(10f, currentState, -1, GetState());
 
             // Activa inmunidad temporal para evitar colisiones
             immuneToBodyCollision = true;
@@ -114,7 +114,7 @@ public class Snake : MonoBehaviour
         else if (tail.Count > 0)
         {
             //penalización por cada paso sin comida
-            NeuralNetwork.ApplyReward(-1f, currentState, -1, GetState());
+            //NeuralNetwork.ApplyReward(-1f, currentState, -1, GetState());
 
             // Actualiza las posiciones del cuerpo
             tail.Last().position = currentPosition;
@@ -240,7 +240,7 @@ public class Snake : MonoBehaviour
     void GameOver()
     {
         Debug.Log("Game Over");
-        NeuralNetwork.ApplyReward(-100f, GetState(), -1, null); // Penalización alta por perder
+        //NeuralNetwork.ApplyReward(-100f, GetState(), -1, null); // Penalización alta por perder
         ResetSnake();
     }
 
@@ -248,6 +248,6 @@ public class Snake : MonoBehaviour
     {
         points++;
         scoreText.text = "Score: " + points.ToString();
-        NeuralNetwork.ApplyReward(10f, GetState(), -1, null); // Recompensa al comer comida
+        //NeuralNetwork.ApplyReward(10f, GetState(), -1, null); // Recompensa al comer comida
     }
 }
