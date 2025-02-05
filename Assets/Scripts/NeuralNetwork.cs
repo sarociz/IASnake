@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NeuralNetwork : MonoBehaviour
+public class NeuralNetwork
 {
     private int inputSize, hiddenSize, outputSize;
     private float[,] weightsInputHidden;
     private float[,] weightsHiddenOutput;
     private List<Experience> memory;
     private float learningRate = 0.01f;
-    private float discountFactor = 0.95f; // Importancia del futuro 
-
-
-
+    private float discountFactor = 0.95f; // Importancia del futuro
+    private float epsilon = 0.1f; // Exploración ?-greedy
+    private int memorySize = 500; // Límite de memoria para evitar sobrecarga
+    private System.Random random = new System.Random();
 
     public NeuralNetwork(int inputSize, int hiddenSize, int outputSize)
     {
@@ -28,46 +28,26 @@ public class NeuralNetwork : MonoBehaviour
 
     private void InitializeWeights()
     {
-        System.Random random = new System.Random();
         for (int i = 0; i < inputSize; i++)
-        {
             for (int j = 0; j < hiddenSize; j++)
-            {
                 weightsInputHidden[i, j] = (float)random.NextDouble() * 2 - 1;
-            }
-        }
 
         for (int i = 0; i < hiddenSize; i++)
-        {
             for (int j = 0; j < outputSize; j++)
-            {
                 weightsHiddenOutput[i, j] = (float)random.NextDouble() * 2 - 1;
-            }
-        }
     }
 
-    // Método para predecir el mejor movimiento para la snake
     public int Predict(float[] inputs)
     {
-        // Similar al código anterior (forward pass)
-        float[] hidden = new float[hiddenSize];
-        for (int i = 0; i < hiddenSize; i++)
-        {
-            hidden[i] = 0;
-            for (int j = 0; j < inputSize; j++)
-                hidden[i] += inputs[j] * weightsInputHidden[j, i];
-            hidden[i] = Mathf.Tan(hidden[i]);
-        }
+        // Explorar con probabilidad epsilon (?-greedy)
+        if (random.NextDouble() < epsilon)
+            return random.Next(outputSize); // Acción aleatoria
 
-        float[] outputs = new float[outputSize];
-        for (int i = 0; i < outputSize; i++)
-        {
-            outputs[i] = 0;
-            for (int j = 0; j < hiddenSize; j++)
-                outputs[i] += hidden[j] * weightsHiddenOutput[j, i];
-        }
+        // Forward pass
+        float[] hidden = ForwardPass(inputs, weightsInputHidden);
+        float[] outputs = ForwardPass(hidden, weightsHiddenOutput);
 
-        // Devuelve la acción con mayor valor
+        // Seleccionar la mejor acción
         int bestAction = 0;
         float maxOutput = outputs[0];
         for (int i = 1; i < outputSize; i++)
@@ -83,67 +63,82 @@ public class NeuralNetwork : MonoBehaviour
 
     public void ApplyReward(float reward, float[] state, int action, float[] nextState)
     {
-        // Entrena usando las experiencias almacenadas
-        // Agrega la experiencia al historial
+        // Almacenar la experiencia
         memory.Add(new Experience(state, action, reward, nextState));
-        Train();
+        if (memory.Count > memorySize) memory.RemoveAt(0); // Limitar tamaño de memoria
+
+        // Entrenar en lotes
+        if (memory.Count >= 32) Train();
     }
 
     private void Train()
     {
-        foreach (var experience in memory)
+        // Seleccionar minibatch aleatorio
+        List<Experience> batch = new List<Experience>();
+        for (int i = 0; i < 32; i++)
+            batch.Add(memory[random.Next(memory.Count)]);
+
+        foreach (var experience in batch)
         {
-            // Predicción actual (Q(s, a))
             float[] hidden = ForwardPass(experience.State, weightsInputHidden);
             float[] outputs = ForwardPass(hidden, weightsHiddenOutput);
 
-            // Calcula el valor objetivo (Q-target)
             float qTarget = experience.Reward;
             if (experience.NextState != null)
             {
-                // Busca el mejor Q(s', a') futuro si no es un estado terminal
                 float[] nextHidden = ForwardPass(experience.NextState, weightsInputHidden);
                 float[] nextOutputs = ForwardPass(nextHidden, weightsHiddenOutput);
-                qTarget += discountFactor * Mathf.Max(nextOutputs);
+                qTarget += discountFactor * Mathf.Max(nextOutputs); // Usar max(Q(s', a'))
             }
 
-            // Calcula el error y ajusta los pesos
             float error = qTarget - outputs[experience.Action];
-            Backpropagate(error, hidden, experience.Action);
+
+            // Actualizar pesos usando backpropagation
+            Backpropagate(error, hidden, experience.Action, experience.State);
         }
 
-
-        memory.Clear();
+        if (memory.Count > 500)
+        {
+            memory.RemoveAt(0); // Eliminar la experiencia más antigua
+        }
     }
 
     private float[] ForwardPass(float[] inputs, float[,] weights)
     {
         int outputSize = weights.GetLength(1);
         float[] outputs = new float[outputSize];
+
         for (int i = 0; i < outputSize; i++)
         {
             outputs[i] = 0;
             for (int j = 0; j < inputs.Length; j++)
                 outputs[i] += inputs[j] * weights[j, i];
-            outputs[i] = Mathf.Tan(outputs[i]);
+
+            // Usar ReLU en lugar de tangente
+            outputs[i] = Mathf.Max(0, outputs[i]);
         }
         return outputs;
     }
 
-    private void Backpropagate(float error, float[] hidden, int action)
+    private void Backpropagate(float error, float[] hidden, int action, float[] inputs)
     {
-        // Ajusta los pesos de salida (hidden -> output)
+        // Ajustar pesos hidden -> output
         for (int i = 0; i < hiddenSize; i++)
-        {
-            float gradient = error * hidden[i];
-            weightsHiddenOutput[i, action] += learningRate * gradient;
-        }
+            weightsHiddenOutput[i, action] += learningRate * error * hidden[i];
 
-        // (Opcional) Ajusta los pesos de entrada (input -> hidden) si lo necesitas
+        // Ajustar pesos input -> hidden
+        for (int i = 0; i < inputSize; i++)
+        {
+            for (int j = 0; j < hiddenSize; j++)
+            {
+                float gradient = error * weightsHiddenOutput[j, action] * ((hidden[j] > 0) ? 1 : 0); // Derivada de ReLU
+                weightsInputHidden[i, j] += learningRate * gradient * inputs[i];
+            }
+        }
     }
 }
 
-// Clase para almacenar experiencias (estado, acción, recompensa, siguiente estado)
+
 public class Experience
 {
     public float[] State;

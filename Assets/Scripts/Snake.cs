@@ -143,21 +143,26 @@ public class Snake : MonoBehaviour
             {
                 float reward = 0;
 
-                if (currentState[0] < lastdistancex || currentState[1] < lastdistancey || currentState[0] < lastdistancex && currentState[1] < lastdistancey)
-                {
-                    Debug.Log("Good good");
-                    reward = 5f;
+                float lastDistance = Mathf.Sqrt(lastdistancex * lastdistancex + lastdistancey * lastdistancey);
+                float currentDistance = Mathf.Sqrt(currentState[0] * currentState[0] + currentState[1] * currentState[1]);
 
+                if (currentDistance < lastDistance)
+                {
+                    reward = 2f; // Se acerca a la comida
+                    Debug.Log("Good good");
                 }
                 else
                 {
-                    reward = -5f;
+                    reward = -4f; // Se aleja de la comida
                     Debug.Log("Bad bad");
                 }
+
                 lastdistancex = currentState[0];
                 lastdistancey = currentState[1];
-                //penalización por cada paso sin comida
-                NeuralNetwork.ApplyReward(reward - 2f, currentState, action, GetState());
+
+                // Aplicar recompensa
+                NeuralNetwork.ApplyReward(reward, currentState, action, GetState());
+
             }
             UpdateBodySpritesRotation();
         }
