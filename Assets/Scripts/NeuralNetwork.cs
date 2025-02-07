@@ -9,7 +9,7 @@ public class NeuralNetwork
     private List<Experience> memory;
     private float learningRate = 0.01f;
     private float discountFactor = 0.95f; // Importancia del futuro
-    private float epsilon = 0.1f; // Exploración ?-greedy
+    private float epsilon = 0.1f; 
     private int memorySize = 500; // Límite de memoria para evitar sobrecarga
     private System.Random random = new System.Random();
 
@@ -41,7 +41,7 @@ public class NeuralNetwork
     {
         // Explorar con probabilidad epsilon (?-greedy)
         if (random.NextDouble() < epsilon)
-            return random.Next(outputSize); // Acción aleatoria
+            return random.Next(outputSize); 
 
         // Forward pass
         float[] hidden = ForwardPass(inputs, weightsInputHidden);
@@ -65,7 +65,8 @@ public class NeuralNetwork
     {
         // Almacenar la experiencia
         memory.Add(new Experience(state, action, reward, nextState));
-        if (memory.Count > memorySize) memory.RemoveAt(0); // Limitar tamaño de memoria
+        // Limitar tamaño de memoria
+        if (memory.Count > memorySize) memory.RemoveAt(0); 
 
         // Entrenar en lotes
         if (memory.Count >= 32) Train();
@@ -99,7 +100,7 @@ public class NeuralNetwork
 
         if (memory.Count > 500)
         {
-            memory.RemoveAt(0); // Eliminar la experiencia más antigua
+            memory.RemoveAt(0); 
         }
     }
 
@@ -131,7 +132,7 @@ public class NeuralNetwork
         {
             for (int j = 0; j < hiddenSize; j++)
             {
-                float gradient = error * weightsHiddenOutput[j, action] * ((hidden[j] > 0) ? 1 : 0); // Derivada de ReLU
+                float gradient = error * weightsHiddenOutput[j, action] * ((hidden[j] > 0) ? 1 : 0); 
                 weightsInputHidden[i, j] += learningRate * gradient * inputs[i];
             }
         }
